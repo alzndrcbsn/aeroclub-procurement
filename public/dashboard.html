@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Dashboard | Aero.AMT</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet" />
+  <title>Dashboard | Aero.AMT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
   <style>
     :root {
       --primary: #00d9ff;
-      --bg-dark: #0f2027;
-      --bg-deep: #203a43;
-      --bg-darker: #2c5364;
-      --card-bg: rgba(255, 255, 255, 0.05);
-      --hover-bg: rgba(0, 217, 255, 0.15);
+      --bg: #0f2027;
+      --bg2: #203a43;
+      --bg3: #2c5364;
+      --card: rgba(255, 255, 255, 0.05);
+      --hover: rgba(0, 217, 255, 0.15);
     }
 
     * {
@@ -22,46 +22,10 @@
     }
 
     body {
-      display: flex;
-      min-height: 100vh;
       font-family: 'Orbitron', sans-serif;
-      background: linear-gradient(to right, var(--bg-dark), var(--bg-deep), var(--bg-darker));
+      background: linear-gradient(to right, var(--bg), var(--bg2), var(--bg3));
       color: #fff;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      width: 240px;
-      background-color: rgba(0, 31, 63, 0.95);
-      display: flex;
-      flex-direction: column;
-      padding: 2rem 1rem;
-      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
-    }
-
-    .sidebar h2 {
-      color: var(--primary);
-      font-size: 1.6rem;
-      margin-bottom: 2rem;
-      text-align: center;
-    }
-
-    .sidebar a {
-      color: #d0e6ff;
-      text-decoration: none;
-      padding: 10px 15px;
-      margin-bottom: 10px;
-      border-radius: 6px;
-      transition: background 0.3s;
-    }
-
-    .sidebar a:hover {
-      background-color: var(--hover-bg);
-    }
-
-    /* Main area */
-    .main {
-      flex: 1;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
@@ -75,7 +39,7 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
 
-    header .title {
+    .title {
       font-size: 1.8rem;
       color: var(--primary);
     }
@@ -99,26 +63,26 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 2rem;
-      padding: 2rem;
+      padding: 3rem 5%;
     }
 
     .card {
-      background-color: var(--card-bg);
+      background-color: var(--card);
       padding: 2rem;
       border-radius: 14px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
       text-align: center;
       cursor: pointer;
       transition: 0.3s;
     }
 
     .card:hover {
-      background-color: var(--hover-bg);
+      background-color: var(--hover);
       transform: translateY(-5px);
     }
 
     .card h2 {
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       color: var(--primary);
       margin-bottom: 0.5rem;
     }
@@ -127,90 +91,56 @@
       color: #ccc;
       font-size: 0.95rem;
     }
-
-    @media (max-width: 768px) {
-      .sidebar {
-        display: none;
-      }
-    }
   </style>
 </head>
 <body>
-  <!-- Sidebar Navigation -->
-  <div class="sidebar">
-    <h2>✈️ Aero.AMT</h2>
-    <a href="dashboard.html">📊 Dashboard</a>
-    <a href="charts.html">📈 Charts</a>
-    <a href="user-status.html">👤 User Stats</a>
-    <a href="manage-users.html">👥 Manage Users</a>
-    <a href="manage-request.html">📦 Procurement</a>
-    <a href="inventory.html">🛠️ Inventory</a>
-    <a href="announcements.html">📢 Announcements</a>
-    <a href="settings.html">⚙️ Settings</a>
-  </div>
+  <header>
+    <div class="title">✈️ Aero.AMT User Dashboard</div>
+    <a class="logout-link" href="#" onclick="logout()">Logout</a>
+  </header>
 
-  <!-- Main Content Area -->
-  <div class="main">
-    <header>
-      <div class="title">Admin Dashboard</div>
-      <a class="logout-link" href="#" onclick="logout()">Logout</a>
-    </header>
-
-    <div class="dashboard-grid">
-      <div class="card" onclick="location.href='charts.html'">
-        <h2>📊 Charts</h2>
-        <p>View analytics.</p>
-      </div>
-      <div class="card" onclick="location.href='user-status.html'">
-        <h2>👤 User Stats</h2>
-        <p>Track engagement and user activity.</p>
-      </div>
-      <div class="card" onclick="location.href='reports.html'">
-        <h2>📁 Reports</h2>
-        <p>Download usage and logs.</p>
-      </div>
-      <div class="card" onclick="location.href='manage-users.html'">
-        <h2>👥 User Management</h2>
-        <p>Manage roles and users.</p>
-      </div>
-      <div class="card" onclick="location.href='manage-request.html'">
-        <h2>📦 Manage Requests</h2>
-        <p>Review procurement forms.</p>
-      </div>
-      <div class="card" onclick="location.href='inventory.html'">
-        <h2>🛠️ Inventory</h2>
-        <p>Track and edit stock levels.</p>
-      </div>
-      <div class="card" onclick="location.href='announcements.html'">
-        <h2>📢 Announcements</h2>
-        <p>Post updates for users.</p>
-      </div>
-      <div class="card" onclick="location.href='settings.html'">
-        <h2>⚙️ Settings</h2>
-        <p>Configure app features.</p>
-      </div>
+  <div class="dashboard-grid">
+    <div class="card" onclick="location.href='procurement.html'">
+      <h2>📝 New Request</h2>
+      <p>Create a new procurement request.</p>
+    </div>
+    <div class="card" onclick="location.href='view-request.html'">
+      <h2>📋 My Requests</h2>
+      <p>Track your procurement submissions.</p>
+    </div>
+    <div class="card" onclick="location.href='announcements.html'">
+      <h2>📢 Announcements</h2>
+      <p>View updates from administrators.</p>
+    </div>
+    <div class="card" onclick="location.href='inventory.html'">
+      <h2>📦 Inventory</h2>
+      <p>Check available items (read-only).</p>
+    </div>
+    <div class="card" onclick="location.href='settings.html'">
+      <h2>⚙️ Settings</h2>
+      <p>Update your profile and theme.</p>
     </div>
   </div>
 
-  <!-- Firebase Auth -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="../firebase.js"></script>
+  <script src="/firebase.js"></script>
   <script>
     const auth = firebase.auth();
     auth.onAuthStateChanged(async (user) => {
-      if (!user) return window.location.href = "../index.html";
+      if (!user) return window.location.href = "user-login.html";
       const doc = await firebase.firestore().collection("users").doc(user.uid).get();
-      if (doc.data()?.role !== "admin") {
-        alert("Access denied.");
-        return window.location.href = "../index.html";
+      if (!doc.exists || doc.data()?.role === "admin") {
+        alert("This page is for regular users only.");
+        return window.location.href = "index.html";
       }
     });
 
     function logout() {
-      firebase.auth().signOut().then(() => {
-        window.location.href = "login.html";
+      auth.signOut().then(() => {
+        window.location.href = "user-login.html";
       });
     }
   </script>
