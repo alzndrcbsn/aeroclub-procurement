@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Procurement Ordering - Aero.AMT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <script type="module" src="/firebase.js"></script>
+  <style>
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)),
+        url('https://images.unsplash.com/photo-1504198458649-3128b932f49b?auto=format&fit=crop&w=1500&q=80') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #001f3f;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-title {
+      font-size: 20px;
+      color: #00d9ff;
+    }
+
+    .back-btn {
+      background-color: #00d9ff;
+      color: #000;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .main-container {
+      display: flex;
+      gap: 2rem;
+      padding: 2rem;
+      max-width: 1300px;
+      margin: auto;
+      flex-wrap: wrap;
+    }
+
+    .left-form, .right-summary {
+      flex: 1;
+      min-width: 400px;
+      background-color: rgba(0, 0, 0, 0.75);
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,217,255,0.2);
+    }
+
+    label {
+      display: block;
+      margin-top: 1rem;
+      margin-bottom: 0.3rem;
+      font-weight: bold;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      font-size: 14px;
+      margin-bottom: 1rem;
+    }
+
+    .autoFields.hidden {
+      display: none;
+    }
+
+    .submit-btn, .add-btn {
+      width: 100%;
+      padding: 12px;
+      background-color: #00d9ff;
+      color: black;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    .submit-btn:hover, .add-btn:hover {
+      background-color: #00b3cc;
+    }
+
+    .item-summary {
+      border: 1px solid #00d9ff;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 10px;
+      background-color: rgba(255, 255, 255, 0.05);
+      position: relative;
+    }
+
+    .remove-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #ff4d4d;
+      color: white;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .remove-btn:hover {
+      background-color: #ff1a1a;
+    }
+
+    .summary-title {
+      font-size: 18px;
+      color: #00d9ff;
+      margin-bottom: 1rem;
+    }
+
+    .project-prompt {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    .project-box {
+      background-color: #001f3f;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #00d9ff;
+      text-align: center;
+    }
+
+    .project-box input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      font-size: 16px;
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .project-box button {
+      background-color: #00d9ff;
+      color: #000;
+      padding: 10px 20px;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .project-label {
+      font-size: 16px;
+      color: #00d9ff;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="projectPrompt" class="project-prompt">
+    <div class="project-box">
+      <h2>🔧 Enter Project Name</h2>
+      <input type="text" id="projectInput" placeholder="e.g., Engine Overhaul Project"/>
+      <button onclick="setProjectName()">Continue</button>
+    </div>
+  </div>
+
+  <header>
+    <div class="header-title">✈️ Aero.AMT Procurement - <span id="projectTitle">Loading Project...</span></div>
+    <button class="back-btn" onclick="window.location.href='my-requests.html'">← My Requests</button>
+  </header>
+
+  <div class="main-container">
+    <div class="left-form">
+      <label>Item Name:</label>
+      <input type="text" id="itemName" oninput="checkSizeFields()" />
+      <div id="autoFields" class="autoFields hidden">
+        <label>Type:</label>
+        <input type="text" id="itemType" />
+        <label>Length:</label>
+        <input type="text" id="itemLength" />
+        <label>Diameter:</label>
+        <input type="text" id="itemDiameter" />
+      </div>
+      <label>Quantity:</label>
+      <input type="number" id="itemQty" min="1" />
+      <label>Notes:</label>
+      <textarea id="itemNotes" rows="2"></textarea>
+      <label>Store (optional):</label>
+      <input type="text" id="itemStore" />
+      <label>Estimated Price (optional):</label>
+      <input type="text" id="itemPrice" />
+      <button class="add-btn" onclick="addItem()">➕ Add Item</button>
+    </div>
+    <div class="right-summary">
+      <div class="summary-title">📋 Your Order List</div>
+      <div id="itemSummary">No items added yet.</div>
+      <button class="submit-btn" onclick="submitRequest()">✅ Submit Request</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyC7dS5-UP61Y1wQHLhy-ztYr9wH19fjJT0",
+      authDomain: "aeroamt-club.firebaseapp.com",
+      projectId: "aeroamt-club",
+      storageBucket: "aeroamt-club.appspot.com",
+      messagingSenderId: "599025555692",
+      appId: "1:599025555692:web:a81f44bba23a4a6dc16dc9",
+      measurementId: "G-TSZW8JJ6CZ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let projectName = "";
+    const items = [];
+    let currentUserId = null;
+
+    // ✅ Make sure user is authenticated
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        currentUserId = user.uid;
+        console.log("✅ Logged in as:", currentUserId);
+      } else {
+        alert("❌ You must be logged in to use the procurement system.");
+        window.location.href = "user-login.html"; // Redirect to login page
+      }
+    });
+
+    // Set project name
+    window.setProjectName = function () {
+      const input = document.getElementById("projectInput").value.trim();
+      if (!input) return alert("⚠️ Please enter a project name.");
+      projectName = input;
+      document.getElementById("projectTitle").textContent = input;
+      document.getElementById("projectPrompt").style.display = "none";
+    };
+
+    // Show/hide size fields for specific item names
+    window.checkSizeFields = function () {
+      const value = document.getElementById("itemName").value.toLowerCase();
+      document.getElementById("autoFields").classList.toggle("hidden", !["bolt", "nut", "screw", "washer", "rivet", "pipe"].some(i => value.includes(i)));
+    };
+
+    // Add item to summary
+    window.addItem = function () {
+      const item = {
+        name: document.getElementById("itemName").value.trim(),
+        type: document.getElementById("itemType").value.trim(),
+        length: document.getElementById("itemLength").value.trim(),
+        diameter: document.getElementById("itemDiameter").value.trim(),
+        qty: document.getElementById("itemQty").value.trim(),
+        notes: document.getElementById("itemNotes").value.trim(),
+        store: document.getElementById("itemStore").value.trim(),
+        price: document.getElementById("itemPrice").value.trim(),
+      };
+      if (!item.name || !item.qty) return alert("⚠️ Item Name and Quantity are required.");
+      items.push(item);
+      const div = document.createElement("div");
+      div.className = "item-summary";
+      div.innerHTML = `
+        <button class="remove-btn" onclick="this.parentElement.remove()">Remove</button>
+        <strong>Item:</strong> ${item.name} (${item.qty})<br/>
+        ${item.type || item.length || item.diameter ? `<strong>Size:</strong> ${[item.type, item.length, item.diameter].filter(Boolean).join(", ")}` : ""}
+        ${item.notes ? `<br/><strong>Notes:</strong> ${item.notes}` : ""}
+        ${item.store ? `<br/><strong>Store:</strong> ${item.store}` : ""}
+        ${item.price ? `<br/><strong>Price:</strong> ${item.price}` : ""}
+      `;
+      document.getElementById("itemSummary").appendChild(div);
+      ["itemName", "itemType", "itemLength", "itemDiameter", "itemQty", "itemNotes", "itemStore", "itemPrice"].forEach(id => document.getElementById(id).value = "");
+      document.getElementById("autoFields").classList.add("hidden");
+    };
+
+    // Submit procurement request
+    window.submitRequest = async function () {
+      if (items.length === 0) return alert("⚠️ No items to submit.");
+      if (!currentUserId) return alert("❌ You must be logged in to submit.");
+
+      try {
+        const requestData = {
+          project: projectName,
+          items,
+          status: "pending",
+          userId: currentUserId,
+          timestamp: serverTimestamp()
+        };
+
+        // ✅ Send to main collection
+        const requestRef = await addDoc(collection(db, "procurementRequests"), requestData);
+
+        // ✅ Also save to user's subcollection
+        await setDoc(doc(db, `users/${currentUserId}/myRequests/${requestRef.id}`), {
+          ...requestData,
+          requestId: requestRef.id
+        });
+
+        alert("✅ Your procurement request has been submitted!");
+        items.length = 0;
+        document.getElementById("itemSummary").innerHTML = "No items added yet.";
+        window.location.href = "view-request.html";
+      } catch (error) {
+        console.error("❌ Error submitting request:", error);
+        alert("❌ Failed to submit request. Please try again.");
+      }
+    };
+  </script>
+</body>
+</html>

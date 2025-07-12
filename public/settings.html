@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Settings - Aero.AMT Club</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Orbitron', sans-serif;
+      margin: 0;
+      background-color: #f5faff;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .dashboard-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #001f3f;
+      padding: 1rem 2rem;
+      color: white;
+    }
+
+    .date-time {
+      color: #00d9ff;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .profile-menu {
+      position: relative;
+    }
+
+    .profile-btn {
+      background: none;
+      border: none;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      color: white;
+    }
+
+    .profile-btn img {
+      width: 30px;
+      height: 30px;
+      margin-right: 8px;
+    }
+
+    .profile-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: white;
+      color: black;
+      border-radius: 5px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      display: none;
+      flex-direction: column;
+      z-index: 1000;
+    }
+
+    .profile-dropdown a,
+    .profile-dropdown button {
+      padding: 10px;
+      border: none;
+      background: none;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .profile-dropdown a:hover,
+    .profile-dropdown button:hover {
+      background-color: #f0f0f0;
+    }
+
+    .profile-menu.open .profile-dropdown {
+      display: flex;
+    }
+
+    .settings-container {
+      max-width: 700px;
+      margin: 40px auto;
+      background: #ffffff;
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    .settings-container.dark {
+      background: #1a1a1a;
+      color: #f0f0f0;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 1rem;
+      color: #003366;
+      text-decoration: none;
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 0.8rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+
+    .save-btn,
+    .theme-toggle {
+      background-color: #001f3f;
+      color: white;
+      border: none;
+      padding: 0.75rem 2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    .theme-toggle {
+      background-color: #003366;
+    }
+
+    .profile-preview {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .profile-preview img {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #003366;
+    }
+
+    .admin-section {
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid #ccc;
+    }
+
+    .admin-section h3 {
+      color: #cc0000;
+    }
+
+    .status-msg {
+      text-align: center;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+
+    body.dark {
+      background-color: #121212;
+      color: #e0e0e0;
+    }
+
+    body.dark input {
+      background-color: #2a2a2a;
+      color: #fff;
+      border-color: #444;
+    }
+  </style>
+</head>
+<body class="dashboard-bg">
+
+  <!-- Top Navigation -->
+  <nav class="dashboard-nav">
+    <div class="logo">✈️ Aero.AMT Club</div>
+    <div id="dateTimeDisplay" class="date-time"></div>
+    <div class="profile-menu">
+      <button id="profileBtn" class="profile-btn">
+        <img src="profile-icon.png" alt="Profile" />
+        <span class="profile-name">Hi, User</span>
+        <svg class="arrow" xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 3 6 9 6"/></svg>
+      </button>
+      <div id="profileDropdown" class="profile-dropdown">
+        <a href="settings.html">Settings</a>
+        <a href="manage_requests.html">Manage Requests</a>
+        <button onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Settings Content -->
+  <div class="settings-container" id="settingsContainer">
+    <a href="dashboard.html" class="back-link">← Back to Dashboard</a>
+    <h2>⚙️ User Settings</h2>
+
+    <div class="profile-preview">
+      <img id="profileImage" src="default-profile.png" alt="Profile Preview" />
+      <input type="file" id="profileUpload" accept="image/*">
+    </div>
+
+    <form id="settingsForm">
+      <div class="form-group">
+        <label for="userName">Full Name</label>
+        <input type="text" id="userName" required />
+      </div>
+
+      <div class="form-group">
+        <label for="userEmail">Email</label>
+        <input type="email" id="userEmail" disabled />
+      </div>
+
+      <div class="form-group">
+        <label for="userPassword">New Password</label>
+        <input type="password" id="userPassword" placeholder="Leave blank to keep current" />
+      </div>
+
+      <button type="submit" class="save-btn">Save Changes</button>
+    </form>
+
+    <button class="theme-toggle" onclick="toggleTheme()">🌗 Toggle Theme</button>
+
+    <div id="statusMessage" class="status-msg"></div>
+
+    <div id="adminSection" class="admin-section" style="display: none;">
+      <h3>🔐 Admin Panel</h3>
+      <a href="admin_users.html">👥 Manage Users</a>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs -->
+<!-- Firebase SDKs (Compat Version) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<!-- Your Firebase config -->
+<script src="firebase.js"></script>
+
+
+  <script>
+    function updateDateTime() {
+      const now = new Date();
+      const options = {
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      };
+      document.getElementById("dateTimeDisplay").textContent = now.toLocaleString('en-PH', options);
+    }
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
+
+    const profileBtn = document.getElementById('profileBtn');
+    const profileDropdown = document.getElementById('profileDropdown');
+    const profileMenu = document.querySelector('.profile-menu');
+
+    profileBtn.addEventListener('click', () => {
+      profileDropdown.classList.toggle('open');
+      profileMenu.classList.toggle('open');
+    });
+
+    window.addEventListener('click', (e) => {
+      if (!profileMenu.contains(e.target)) {
+        profileDropdown.classList.remove('open');
+        profileMenu.classList.remove('open');
+      }
+    });
+
+    function logout() {
+      firebase.auth().signOut()
+        .then(() => window.location.href = 'index.html')
+        .catch(err => alert("Logout failed: " + err.message));
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle("dark");
+      document.getElementById("settingsContainer").classList.toggle("dark");
+    }
+
+    const profileUpload = document.getElementById("profileUpload");
+    const profileImage = document.getElementById("profileImage");
+
+    profileUpload.addEventListener("change", async () => {
+      const file = profileUpload.files[0];
+      const user = firebase.auth().currentUser;
+      if (file && user) {
+        const storageRef = firebase.storage().ref(`profileImages/${user.uid}.jpg`);
+        try {
+          await storageRef.put(file);
+          const downloadURL = await storageRef.getDownloadURL();
+          profileImage.src = downloadURL;
+          await firebase.firestore().collection("users").doc(user.uid).update({
+            profileImageUrl: downloadURL
+          });
+          alert("✅ Profile image updated!");
+        } catch (error) {
+          console.error("Image upload error:", error);
+          alert("❌ Failed to upload image.");
+        }
+      }
+    });
+
+    firebase.auth().onAuthStateChanged(async (user) => {
+      if (user) {
+        const userRef = firebase.firestore().collection("users").doc(user.uid);
+        const doc = await userRef.get();
+
+        document.getElementById("userEmail").value = user.email;
+        const profileName = document.querySelector(".profile-name");
+
+        if (doc.exists) {
+          const data = doc.data();
+          document.getElementById("userName").value = data.name || user.email;
+          if (data.profileImageUrl) {
+            profileImage.src = data.profileImageUrl;
+          }
+          if (profileName) profileName.textContent = data.name || user.email;
+          if (data.role === "admin") {
+            document.getElementById("adminSection").style.display = "block";
+          }
+        }
+
+        document.getElementById("settingsForm").addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const name = document.getElementById("userName").value;
+          const password = document.getElementById("userPassword").value;
+          const statusMsg = document.getElementById("statusMessage");
+          try {
+            await userRef.update({ name });
+            if (password) await user.updatePassword(password);
+            statusMsg.textContent = "✅ Settings updated!";
+            statusMsg.style.color = "green";
+          } catch (err) {
+            statusMsg.textContent = "❌ Failed: " + err.message;
+            statusMsg.style.color = "red";
+          }
+        });
+      } else {
+        window.location.href = "index.html";
+      }
+    });
+  </script>
+</body>
+</html>

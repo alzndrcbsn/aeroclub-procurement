@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📦 Inventory - Admin | Aero.AMT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: rgba(0, 31, 63, 0.95);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+    .header-title {
+      font-size: 1.5rem;
+      color: #00d9ff;
+    }
+    .header-time {
+      font-size: 1rem;
+    }
+    .back-btn {
+      padding: 0.5rem 1rem;
+      background-color: #00d9ff;
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .back-btn:hover {
+      background-color: #00b3cc;
+    }
+    h1 {
+      text-align: center;
+      color: #00d9ff;
+      margin-top: 1.5rem;
+    }
+    .filter-box {
+      text-align: center;
+      margin-top: 1rem;
+    }
+    .filter-box input {
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: none;
+      width: 250px;
+    }
+    table {
+      width: 90%;
+      margin: 2rem auto;
+      border-collapse: collapse;
+      background-color: rgba(255,255,255,0.05);
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 1rem;
+      text-align: left;
+    }
+    th {
+      background-color: #00d9ff;
+      color: black;
+    }
+    button.edit-btn {
+      background-color: #00d9ff;
+      color: #000;
+      padding: 0.4rem 0.8rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button.edit-btn:hover {
+      background-color: #00b3cc;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-title">📦 Inventory Management</div>
+    <div class="header-time" id="timestamp"></div>
+    <button class="back-btn" onclick="history.back()">⬅ Back</button>
+  </header>
+
+  <h1>📋 Inventory List</h1>
+  <div class="filter-box">
+    <input type="text" id="searchInput" placeholder="🔍 Search item name..." onkeyup="filterInventory()" />
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th>Quantity</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="inventoryTable"></tbody>
+  </table>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="../firebase.js"></script>
+  <script>
+    const db = firebase.firestore();
+
+    function updateTimestamp() {
+      const now = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+      document.getElementById("timestamp").textContent = now.toLocaleDateString(undefined, options);
+    }
+    updateTimestamp();
+    setInterval(updateTimestamp, 60000);
+
+    let allInventory = [];
+
+    async function loadInventory() {
+      const table = document.getElementById("inventoryTable");
+      const snapshot = await db.collection("inventory").get();
+      table.innerHTML = "";
+      allInventory = [];
+
+      snapshot.forEach(doc => {
+        const item = { id: doc.id, ...doc.data() };
+        allInventory.push(item);
+      });
+
+      renderTable(allInventory);
+    }
+
+    function renderTable(items) {
+      const table = document.getElementById("inventoryTable");
+      table.innerHTML = "";
+
+      items.forEach(item => {
+        table.innerHTML += `
+          <tr>
+            <td>${item.name}</td>
+            <td>${item.quantity}</td>
+            <td>${item.status}</td>
+            <td><button class="edit-btn" onclick="editItem('${item.id}', '${item.name}', ${item.quantity}, '${item.status}')">Edit</button></td>
+          </tr>
+        `;
+      });
+    }
+
+    function filterInventory() {
+      const keyword = document.getElementById("searchInput").value.toLowerCase();
+      const filtered = allInventory.filter(item => item.name.toLowerCase().includes(keyword));
+      renderTable(filtered);
+    }
+
+    async function editItem(id, name, quantity, status) {
+      const newQty = prompt(`Update quantity for ${name}:`, quantity);
+      const newStatus = prompt(`Update status for ${name} (e.g., Delivered, In Stock):`, status);
+
+      if (newQty === null || newStatus === null) return;
+
+      await db.collection("inventory").doc(id).update({
+        quantity: Number(newQty),
+        status: newStatus,
+        timestamp: new Date()
+      });
+
+      await db.collection("inventory").doc(id).collection("logs").add({
+        message: `Updated by admin. New qty: ${newQty}, Status: ${newStatus}`,
+        timestamp: new Date()
+      });
+
+      if (newStatus.toLowerCase() === "delivered") {
+        await db.collection("schedules").add({
+          itemId: id,
+          itemName: name,
+          deliveryDate: new Date(),
+          status: "Delivered"
+        });
+      }
+
+      alert("✅ Inventory updated successfully.");
+      loadInventory();
+    }
+
+    loadInventory();
+  </script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings - Admin | Aero.AMT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../style.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      color: #ffffff;
+      padding: 2rem;
+    }
+    h1 {
+      color: #00d9ff;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .setting-section {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: rgba(255, 255, 255, 0.08);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0, 217, 255, 0.3);
+    }
+    label, input, select {
+      display: block;
+      width: 100%;
+      margin-bottom: 1rem;
+      font-family: 'Orbitron', sans-serif;
+    }
+    input, select {
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: none;
+    }
+    button {
+      padding: 0.75rem;
+      width: 100%;
+      background-color: #00d9ff;
+      border: none;
+      color: #000;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #00b3cc;
+    }
+  </style>
+</head>
+<body>
+  <h1>⚙️ Admin Settings</h1>
+  <div class="setting-section">
+    <label for="theme">Theme</label>
+    <select id="theme">
+      <option value="light">Light</option>
+      <option value="dark" selected>Dark</option>
+    </select>
+
+    <label for="profilePic">Update Profile Picture</label>
+    <input type="file" id="profilePic" accept="image/*" />
+
+    <label for="emailNotif">Email Notifications</label>
+    <select id="emailNotif">
+      <option value="enabled">Enabled</option>
+      <option value="disabled">Disabled</option>
+    </select>
+
+    <button onclick="saveSettings()">Save Settings</button>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="../firebase.js"></script>
+  <script>
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+
+    // 🔒 Restrict access to admin only
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        alert("You're not logged in.");
+        window.location.href = "../index.html";
+        return;
+      }
+
+      const doc = await db.collection("users").doc(user.uid).get();
+      const role = doc.data()?.role;
+
+      if (role !== "admin") {
+        alert("Access denied. You are not an admin.");
+        window.location.href = "../dashboard.html";
+      }
+    });
+
+    function saveSettings() {
+      const theme = document.getElementById("theme").value;
+      const emailNotif = document.getElementById("emailNotif").value;
+      const file = document.getElementById("profilePic").files[0];
+
+      auth.onAuthStateChanged(async (user) => {
+        if (!user) return alert("Not authenticated.");
+
+        try {
+          await db.collection("settings").doc(user.uid).set({
+            theme,
+            emailNotif,
+          }, { merge: true });
+
+          if (file) {
+            const ref = storage.ref(`profile_pics/${user.uid}`);
+            await ref.put(file);
+          }
+
+          alert("Settings saved successfully!");
+        } catch (err) {
+          console.error("Error saving settings:", err);
+          alert("Failed to save settings.");
+        }
+      });
+    }
+  </script>
+</body>
+</html>

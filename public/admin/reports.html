@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📁 Reports - Admin | Aero.AMT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../style.css" />
+  <style>
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: rgba(0, 31, 63, 0.95);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+    .header-title {
+      font-size: 1.5rem;
+      color: #00d9ff;
+    }
+    .header-time {
+      font-size: 1rem;
+    }
+    .back-btn {
+      padding: 0.5rem 1rem;
+      background-color: #00d9ff;
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      width: auto;
+    }
+    .back-btn:hover {
+      background-color: #00b3cc;
+    }
+    h1 {
+      text-align: center;
+      color: #00d9ff;
+      margin-top: 1.5rem;
+    }
+    .container {
+      display: flex;
+      gap: 2rem;
+      margin: 2rem;
+      flex-wrap: wrap;
+    }
+    .report-controls {
+      flex: 1;
+      min-width: 280px;
+      max-width: 320px;
+      background-color: rgba(255, 255, 255, 0.08);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0, 217, 255, 0.3);
+    }
+    .report-output {
+      flex: 3;
+      min-width: 400px;
+      background-color: rgba(255, 255, 255, 0.04);
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0, 217, 255, 0.2);
+    }
+    select, input[type="date"] {
+      width: 100%;
+      padding: 0.6rem;
+      border-radius: 6px;
+      border: none;
+      margin-bottom: 1rem;
+      font-family: 'Orbitron', sans-serif;
+    }
+    button {
+      width: 100%;
+      padding: 0.6rem;
+      margin-bottom: 0.75rem;
+      border-radius: 6px;
+      border: none;
+      background-color: #00d9ff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #00b3cc;
+    }
+    table {
+      width: 100%;
+      margin-top: 1rem;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background-color: #00d9ff;
+      color: black;
+    }
+    canvas {
+      margin-top: 2rem;
+      background-color: rgba(255, 255, 255, 0.05);
+      padding: 1rem;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-title">📁 Admin Reports</div>
+    <div class="header-time" id="timestamp"></div>
+    <button class="back-btn" onclick="history.back()">⬅ Back</button>
+  </header>
+
+  <h1>📊 Generate & View Reports</h1>
+  <div class="container">
+    <div class="report-controls">
+      <label for="reportType">Select Report Type</label>
+      <select id="reportType">
+        <option value="users">Users</option>
+        <option value="procurements">Procurements</option>
+        <option value="schedules">Schedules</option>
+        <option value="inventory">Inventory</option>
+      </select>
+
+      <label for="departmentFilter">Department</label>
+      <select id="departmentFilter">
+        <option value="">All</option>
+        <option value="Aero">Aeronautical Engineering</option>
+        <option value="AMT">Aircraft Maintenance</option>
+        <option value="CAMT">Certificate AMT</option>
+      </select>
+
+      <label for="startDate">Start Date</label>
+      <input type="date" id="startDate">
+
+      <label for="endDate">End Date</label>
+      <input type="date" id="endDate">
+
+      <button onclick="loadReport()">📊 Generate Report</button>
+      <button onclick="downloadCSV()">📄 Export CSV</button>
+      <button onclick="window.print()">🖨️ Print PDF</button>
+    </div>
+
+    <div class="report-output">
+      <div id="reportOutput"></div>
+      <canvas id="reportChart" width="400" height="200"></canvas>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="../firebase.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    let reportData = [];
+    let currentChart = null;
+
+    const timestamp = document.getElementById("timestamp");
+    function updateTimestamp() {
+      const now = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+      timestamp.textContent = now.toLocaleDateString(undefined, options);
+    }
+    updateTimestamp();
+    setInterval(updateTimestamp, 60000);
+
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        alert("You're not logged in.");
+        window.location.href = "../index.html";
+        return;
+      }
+
+      const doc = await db.collection("users").doc(user.uid).get();
+      const role = doc.data()?.role;
+
+      if (role !== "admin") {
+        alert("Access denied. You are not an admin.");
+        window.location.href = "../dashboard.html";
+      }
+    });
+
+    async function loadReport() {
+      const type = document.getElementById("reportType").value;
+      const department = document.getElementById("departmentFilter").value;
+      const startDate = new Date(document.getElementById("startDate").value);
+      const endDate = new Date(document.getElementById("endDate").value);
+      endDate.setHours(23, 59, 59, 999);
+
+      let query = db.collection(type);
+
+      if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+        query = query.where("timestamp", ">=", startDate).where("timestamp", "<=", endDate);
+      }
+
+      if (department) {
+        query = query.where("department", "==", department);
+      }
+
+      const snap = await query.get();
+      reportData = snap.docs.map(doc => doc.data());
+
+      const output = document.getElementById("reportOutput");
+      if (reportData.length === 0) {
+        output.innerHTML = '<p>No data found.</p>';
+        return;
+      }
+
+      const headers = Object.keys(reportData[0]);
+      let html = `<table><thead><tr>${headers.map(h => `<th>${h}</th>`).join("")}</tr></thead><tbody>`;
+      html += reportData.map(row => `<tr>${headers.map(h => `<td>${row[h]}</td>`).join("")}</tr>`).join("");
+      html += "</tbody></table>";
+      output.innerHTML = html;
+
+      drawChart(type);
+    }
+
+    function downloadCSV() {
+      if (reportData.length === 0) return alert("Generate a report first.");
+
+      const headers = Object.keys(reportData[0]);
+      const rows = reportData.map(row => headers.map(h => `"${row[h]}"`).join(","));
+      const csv = [headers.join(","), ...rows].join("\n");
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'report.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function drawChart(type) {
+      const ctx = document.getElementById("reportChart").getContext("2d");
+      if (currentChart) currentChart.destroy();
+
+      const labels = reportData.map((_, i) => `${type} #${i + 1}`);
+      const values = reportData.map(row => Object.keys(row).length);
+
+      currentChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: `Data Points per ${type}`,
+            data: values,
+            backgroundColor: '#00d9ff'
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>

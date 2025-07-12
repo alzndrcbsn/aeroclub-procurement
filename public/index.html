@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aero.AMT Login</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                  url('https://images.unsplash.com/photo-1464037866556-6812c9d1c72e?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0') no-repeat center center fixed;
+      background-size: cover;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: white;
+      padding: 0 5%;
+    }
+
+    .announcement {
+      width: 45%;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+    }
+
+    .announcement h2 {
+      text-align: center;
+      color: #00d9ff;
+      margin-bottom: 1rem;
+    }
+
+    .announcement video {
+      width: 100%;
+      border-radius: 10px;
+    }
+
+    .login-container {
+      height: 100%;
+      width: 45%;
+      background-color: rgba(0, 0, 0, 0.85);
+      padding: 3rem;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    h1 {
+      text-align: center;
+      color: #00d9ff;
+      margin-bottom: 1rem;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 1rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #00d9ff;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #00b3cc;
+    }
+
+    .toggle-mode {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 14px;
+    }
+
+    .hidden { display: none; }
+
+    #statusMessage {
+      text-align: center;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+
+    .field-group { margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="announcement">
+    <h2>🎬 Aero.AMT Updates</h2>
+    <video controls autoplay muted loop>
+      <source src="sample-announcement.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  </div>
+
+  <div class="login-container hidden" id="loginContainer">
+    <h1>Aero.AMT Club</h1>
+    <h2 id="formTitle">✈️ Aero.AMT Login</h2>
+    <form id="authForm">
+      <div class="field-group hidden" id="nameGroup">
+        <input type="text" id="name" placeholder="Full Name" />
+      </div>
+      <div class="field-group hidden" id="yearGroup">
+        <select id="yearLevel">
+          <option value="">Select Year Level</option>
+          <option>1st Year</option>
+          <option>2nd Year</option>
+          <option>3rd Year</option>
+          <option>4th Year</option>
+        </select>
+      </div>
+      <div class="field-group hidden" id="positionGroup">
+        <select id="position">
+          <option value="">Select Department / Role</option>
+          <option value="engineer">Engineer</option>
+          <option value="mechanic">Mechanic</option>
+          <option value="student">Student</option>
+        </select>
+      </div>
+      <div class="field-group hidden" id="prcGroup">
+        <input type="text" id="prc" placeholder="PRC License Number (for Engineers only)" />
+      </div>
+      <div class="field-group hidden" id="usernameGroup">
+        <input type="text" id="username" placeholder="Username" />
+      </div>
+
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button type="submit" id="submitBtn">Login</button>
+    </form>
+
+    <div class="toggle-mode">
+      <span id="toggleText">Don't have an account?</span>
+      <a href="#" id="toggleLink">Register</a>
+    </div>
+
+    <div id="statusMessage"></div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="firebase.js"></script>
+
+  <script>
+    let isLogin = true;
+
+    const toggle = () => {
+      isLogin = !isLogin;
+      document.getElementById("formTitle").textContent = isLogin ? "✈️ Aero.AMT Login" : "✈️ Aero.AMT Registration";
+      document.getElementById("submitBtn").textContent = isLogin ? "Login" : "Register";
+      document.getElementById("toggleText").textContent = isLogin ? "Don't have an account?" : "Already have an account?";
+      document.getElementById("toggleLink").textContent = isLogin ? "Register" : "Login";
+
+      ["nameGroup", "yearGroup", "positionGroup", "prcGroup", "usernameGroup"].forEach(id => {
+        document.getElementById(id).classList.toggle("hidden", isLogin);
+      });
+    };
+
+    document.getElementById("toggleLink").addEventListener("click", (e) => {
+      e.preventDefault();
+      toggle();
+    });
+
+    document.getElementById("position").addEventListener("change", () => {
+      const pos = document.getElementById("position").value;
+      document.getElementById("prcGroup").classList.toggle("hidden", pos !== "engineer");
+    });
+
+    document.getElementById("authForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const status = document.getElementById("statusMessage");
+      status.textContent = "";
+
+      if (isLogin) {
+        try {
+          const cred = await firebase.auth().signInWithEmailAndPassword(email, password);
+          if (!cred.user.emailVerified) {
+            status.textContent = "❌ Please verify your email before logging in.";
+            await firebase.auth().signOut();
+            return;
+          }
+
+          const doc = await firebase.firestore().collection("users").doc(cred.user.uid).get();
+          const role = doc.data()?.role;
+
+          window.location.replace("dashboard.html");
+        } catch (err) {
+          status.textContent = "❌ " + err.message;
+        }
+      } else {
+        const name = document.getElementById("name").value.trim();
+        const year = document.getElementById("yearLevel").value;
+        const position = document.getElementById("position").value;
+        const prc = document.getElementById("prc").value.trim();
+        const username = document.getElementById("username").value.trim();
+
+        if (!name || !year || !position || !username) {
+          status.textContent = "❌ Please fill all required fields.";
+          return;
+        }
+
+        try {
+          const cred = await firebase.auth().createUserWithEmailAndPassword(email, password);
+          await cred.user.sendEmailVerification();
+
+          await firebase.firestore().collection("users").doc(cred.user.uid).set({
+            name,
+            yearLevel: year,
+            position,
+            prc: position === "engineer" ? prc : "",
+            username,
+            email,
+            role: position
+          });
+
+          status.textContent = "✅ Registered! Please verify your email before logging in.";
+          document.getElementById("authForm").reset();
+          toggle();
+        } catch (err) {
+          status.textContent = "❌ " + err.message;
+        }
+      }
+    });
+
+    firebase.auth().onAuthStateChanged(async (user) => {
+      if (user) {
+        const doc = await firebase.firestore().collection("users").doc(user.uid).get();
+        const role = doc.data()?.role;
+
+        // Send everyone to dashboard regardless of role
+        window.location.replace("dashboard.html");
+      } else {
+        document.getElementById("loginContainer").classList.remove("hidden");
+      }
+    });
+  </script>
+</body>
+</html>

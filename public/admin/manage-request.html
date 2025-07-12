@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Requests - Admin | Aero.AMT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../style.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      color: #ffffff;
+      padding: 2rem;
+    }
+    h1 {
+      color: #00d9ff;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .request-card {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 1rem 2rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+    .request-card h3 {
+      margin: 0;
+      color: #00d9ff;
+    }
+    .request-card p {
+      margin: 4px 0;
+      font-size: 0.9rem;
+    }
+    .actions button {
+      margin-right: 10px;
+      padding: 8px 14px;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .approve { background-color: #00ff99; color: #000; }
+    .reject { background-color: #ff4444; color: #fff; }
+    .revise { background-color: #ffaa00; color: #000; }
+  </style>
+</head>
+<body>
+  <h1>📦 Procurement Requests</h1>
+  <div id="requestList"></div>
+
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="../firebase.js"></script>
+
+  <script>
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+    const requestList = document.getElementById("requestList");
+
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) return (window.location.href = "../index.html");
+
+      const userDoc = await db.collection("users").doc(user.uid).get();
+      const role = userDoc.data()?.role;
+      if (role !== "admin") {
+        alert("Access denied.");
+        return window.location.href = "../index.html";
+      }
+
+      const snapshot = await db.collection("procurementRequests")
+        .where("status", "in", ["pending", "revised"])
+        .orderBy("timestamp", "desc").get();
+
+      if (snapshot.empty) {
+        requestList.innerHTML = "<p>No pending requests.</p>";
+        return;
+      }
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const card = document.createElement("div");
+        card.className = "request-card";
+        card.innerHTML = `
+          <h3>${data.itemName}</h3>
+          <p><strong>Requested By:</strong> ${data.requestedBy}</p>
+          <p><strong>Quantity:</strong> ${data.quantity}</p>
+          <p><strong>Reason:</strong> ${data.reason}</p>
+          <p><strong>Status:</strong> ${data.status}</p>
+          <div class="actions">
+            <button class="approve">Approve</button>
+            <button class="reject">Reject</button>
+            <button class="revise">Request Revision</button>
+          </div>
+        `;
+
+        const [approveBtn, rejectBtn, reviseBtn] = card.querySelectorAll("button");
+
+        approveBtn.onclick = async () => {
+          await db.collection("procurementRequests").doc(doc.id).update({ status: "approved" });
+          await db.collection("schedules").add({
+            itemId: doc.id,
+            itemName: data.itemName,
+            deliveryDate: null,
+            status: "Scheduled",
+            requestedBy: data.requestedBy,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          alert("Request approved and delivery scheduled.");
+          card.remove();
+        };
+
+        rejectBtn.onclick = async () => {
+          await db.collection("procurementRequests").doc(doc.id).update({ status: "rejected" });
+          alert("Request rejected.");
+          card.remove();
+        };
+
+        reviseBtn.onclick = async () => {
+          await db.collection("procurementRequests").doc(doc.id).update({ status: "revised" });
+          alert("Marked for revision.");
+          card.remove();
+        };
+
+        requestList.appendChild(card);
+      });
+    });
+  </script>
+</body>
+</html>

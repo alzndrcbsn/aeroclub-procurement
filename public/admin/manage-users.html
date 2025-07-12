@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Users - Admin | Aero.AMT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../style.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      color: #ffffff;
+      padding: 2rem;
+    }
+    h1 {
+      color: #00d9ff;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    th, td {
+      padding: 12px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+    th {
+      background-color: rgba(0, 217, 255, 0.2);
+      color: #00d9ff;
+    }
+    td {
+      color: #ddd;
+    }
+    select, button {
+      padding: 6px;
+      font-family: 'Orbitron', sans-serif;
+      border-radius: 6px;
+      border: none;
+      background-color: #00d9ff;
+      color: #000;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>👥 Manage Users</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Change Role</th>
+      </tr>
+    </thead>
+    <tbody id="userTableBody"></tbody>
+  </table>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="../firebase.js"></script>
+  <script>
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+    const tableBody = document.getElementById("userTableBody");
+
+    auth.onAuthStateChanged(async user => {
+      if (!user) return (window.location.href = "../index.html");
+
+      const adminDoc = await db.collection("users").doc(user.uid).get();
+      if (adminDoc.data()?.role !== "admin") {
+        alert("Access denied.");
+        return window.location.href = "../index.html";
+      }
+
+      const snapshot = await db.collection("users").get();
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${data.name || "-"}</td>
+          <td>${data.email}</td>
+          <td>${data.role || "user"}</td>
+          <td>
+            <select onchange="updateRole('${doc.id}', this.value)">
+              <option value="user" ${data.role === "user" ? "selected" : ""}>User</option>
+              <option value="engineer" ${data.role === "engineer" ? "selected" : ""}>Engineer</option>
+              <option value="mechanic" ${data.role === "mechanic" ? "selected" : ""}>Mechanic</option>
+              <option value="student" ${data.role === "student" ? "selected" : ""}>Student</option>
+              <option value="admin" ${data.role === "admin" ? "selected" : ""}>Admin</option>
+            </select>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    });
+
+    async function updateRole(userId, newRole) {
+      try {
+        await db.collection("users").doc(userId).update({ role: newRole });
+        alert("Role updated successfully!");
+      } catch (err) {
+        alert("Error updating role: " + err.message);
+      }
+    }
+  </script>
+</body>
+</html>

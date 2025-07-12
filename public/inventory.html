@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Inventory - Aero.AMT</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet" />
+  <style>
+    /* Grid container for app cards */
+    .app-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      padding: 20px;
+      justify-items: center;
+    }
+    /* Each app card styling */
+    .app-card {
+      background: #0f172a;
+      border: 2px solid #38bdf8;
+      border-radius: 12px;
+      padding: 20px;
+      width: 200px;
+      height: 200px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #e2e8f0;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+    .app-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    }
+    .app-card h3 {
+      margin: 10px 0;
+      font-size: 1.3rem;
+      font-family: 'Orbitron', sans-serif;
+    }
+    .app-card p {
+      font-size: 0.95rem;
+      margin: 4px 0;
+    }
+
+    /* Navigation bar */
+    .dashboard-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background-color: #1e293b;
+      color: #e2e8f0;
+    }
+    .dashboard-nav .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+    .dashboard-nav button {
+      background-color: #38bdf8;
+      color: #0f172a;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .dashboard-nav button:hover {
+      background-color: #0ea5e9;
+    }
+
+    /* Main content area */
+    .dashboard-main {
+      padding: 2rem;
+    }
+
+    /* Section headings */
+    .form-section h2, .form-section h3 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    /* Inventory update form */
+    #updateInventoryForm {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    #updateInventoryForm input, #updateInventoryForm button {
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: none;
+      font-size: 1rem;
+    }
+    #updateInventoryForm input {
+      width: 300px;
+    }
+    #updateInventoryForm button {
+      background-color: #38bdf8;
+      color: #0f172a;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    #updateInventoryForm button:hover {
+      background-color: #0ea5e9;
+    }
+    #updateMessage {
+      margin-top: 10px;
+      color: #38bdf8;
+      font-weight: 600;
+      text-align: center;
+    }
+  </style>
+</head>
+<body class="dashboard-bg">
+  <nav class="dashboard-nav">
+    <h1 class="logo">📊 Inventory</h1>
+    <button onclick="window.location.href='dashboard.html'">⬅ Back</button>
+  </nav>
+
+  <main class="dashboard-main">
+    <section class="form-section">
+      <h2>Item Inventory</h2>
+      <div id="inventoryList">Loading inventory...</div>
+
+      <div id="updateFormSection" style="display:none; margin-top: 30px;">
+        <h3>Update Inventory</h3>
+        <form id="updateInventoryForm">
+          <input type="text" id="updateItemName" placeholder="Item Name" required />
+          <input type="number" id="updateQuantity" placeholder="New Quantity" required min="0" />
+          <button type="submit">Update</button>
+          <div id="updateMessage"></div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- Firebase SDKs -->
+<!-- Firebase SDKs (Compat Version) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<!-- Your Firebase config -->
+<script src="firebase.js"></script>
+
+  <script>
+    const container = document.getElementById("inventoryList");
+    const updateFormSection = document.getElementById("updateFormSection");
+    const updateForm = document.getElementById("updateInventoryForm");
+    const updateMessage = document.getElementById("updateMessage");
+
+    firebase.auth().onAuthStateChanged(async (user) => {
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      // Check if user is admin to show update form
+      const userDoc = await firebase.firestore().collection("users").doc(user.uid).get();
+      const isAdmin = userDoc.exists && userDoc.data().role === "admin";
+      if (isAdmin) {
+        updateFormSection.style.display = "block";
+      } else {
+        updateFormSection.style.display = "none";
+      }
+
+      // Load inventory items
+      const snapshot = await firebase.firestore().collection("inventory").orderBy("itemName").get();
+
+      if (snapshot.empty) {
+        container.innerHTML = "<p>No items in inventory yet.</p>";
+      } else {
+        let html = `<div class="app-grid">`;
+
+        snapshot.forEach(doc => {
+          const item = doc.data();
+          html += `
+            <div class="app-card" onclick="editItem('${item.itemName}', ${item.quantity})">
+              <h3>${item.itemName}</h3>
+              <p><strong>Qty:</strong> ${item.quantity}</p>
+              <p><strong>Updated:</strong> ${item.updated ? new Date(item.updated.toDate()).toLocaleDateString() : '-'}</p>
+            </div>`;
+        });
+
+        html += `</div>`;
+        container.innerHTML = html;
+      }
+
+      // Automatically sync approved procurement requests into inventory
+      const approvedRequests = await firebase.firestore().collection("requests")
+        .where("status", "==", "approved").get();
+
+      for (const doc of approvedRequests.docs) {
+        const request = doc.data();
+        const itemRef = firebase.firestore().collection("inventory").doc(request.itemName.toLowerCase());
+        const itemSnap = await itemRef.get();
+        let newQty = request.quantity;
+
+        if (itemSnap.exists) {
+          const existing = itemSnap.data();
+          newQty += existing.quantity;
+        }
+
+        await itemRef.set({
+          itemName: request.itemName,
+          quantity: newQty,
+          updated: new Date()
+        });
+
+        await doc.ref.update({ status: "added_to_inventory" });
+      }
+    });
+
+    updateForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("updateItemName").value.trim();
+      const qty = parseInt(document.getElementById("updateQuantity").value);
+
+      if (qty < 0) {
+        updateMessage.textContent = "❌ Quantity cannot be negative.";
+        return;
+      }
+
+      try {
+        const ref = firebase.firestore().collection("inventory").doc(name.toLowerCase());
+        await ref.set({
+          itemName: name,
+          quantity: qty,
+          updated: new Date()
+        });
+        updateMessage.textContent = "✅ Inventory updated.";
+        updateForm.reset();
+      } catch (err) {
+        updateMessage.textContent = "❌ Failed to update.";
+      }
+    });
+
+    function editItem(name, quantity) {
+      document.getElementById('updateItemName').value = name;
+      document.getElementById('updateQuantity').value = quantity;
+      document.getElementById('updateFormSection').scrollIntoView({ behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>

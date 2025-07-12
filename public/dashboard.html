@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard - Aero.AMT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)),
+        url('https://images.unsplash.com/photo-1464037866556-6812c9d1c72e?q=80&w=1470&auto=format&fit=crop') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+    }
+
+    .dashboard-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #001f3f;
+      padding: 1rem 2rem;
+    }
+
+    .logo {
+      font-size: 1.2rem;
+      color: #00d9ff;
+      font-weight: bold;
+    }
+
+    .date-time {
+      color: #00d9ff;
+      font-size: 14px;
+    }
+
+    .profile-menu {
+      position: relative;
+    }
+
+    .profile-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .profile-btn img {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+    }
+
+    .arrow {
+      transform: rotate(90deg);
+    }
+
+    .profile-dropdown {
+      position: absolute;
+      top: 40px;
+      right: 0;
+      background-color: #003366;
+      border-radius: 8px;
+      padding: 0.5rem;
+      display: none;
+      flex-direction: column;
+      min-width: 150px;
+      box-shadow: 0 0 10px #00d9ff;
+    }
+
+    .profile-dropdown a,
+    .profile-dropdown button {
+      color: white;
+      background: none;
+      border: none;
+      padding: 0.5rem;
+      text-align: left;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .profile-dropdown a:hover,
+    .profile-dropdown button:hover {
+      background-color: #005580;
+    }
+
+    .dashboard-main {
+      padding: 2rem;
+    }
+
+    .welcome-section {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .app-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+
+    .app-card {
+      background-color: #002b5c;
+      padding: 1rem;
+      border-radius: 12px;
+      text-decoration: none;
+      color: white;
+      box-shadow: 0 0 8px rgba(0, 217, 255, 0.3);
+      transition: transform 0.2s ease;
+    }
+
+    .app-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 12px #00d9ff;
+    }
+
+    .bottom-section {
+      display: flex;
+      justify-content: space-between;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .panel {
+      flex: 1;
+      background-color: rgba(0, 0, 0, 0.7);
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
+    }
+
+    .panel h3 {
+      color: #00d9ff;
+      margin-bottom: 1rem;
+    }
+
+    hr {
+      border: 1px solid #00d9ff;
+    }
+  </style>
+</head>
+<body>
+  <nav class="dashboard-nav">
+    <div class="logo">✈️ Aero.AMT Club</div>
+    <div id="dateTimeDisplay" class="date-time"></div>
+    <div class="profile-menu">
+      <button id="profileBtn" class="profile-btn">
+        <img src="profile-icon.png" alt="Profile" />
+        <span class="profile-name">Hi, User</span>
+        <svg class="arrow" xmlns="http://www.w3.org/2000/svg" width="12" height="12"><polyline points="6 9 3 6 9 6" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div id="profileDropdown" class="profile-dropdown">
+        <a href="settings.html">Settings</a>
+        <a href="manage_requests.html">Manage Requests</a>
+        <a href="admin_users.html" id="adminLink" style="display: none;">Admin Panel</a>
+        <button onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="dashboard-main">
+    <section class="welcome-section">
+      <h2 id="welcomeMessage">Welcome to Aero.AMT Club System</h2>
+      <p>Select an application below to get started.</p>
+    </section>
+
+    <section class="app-grid">
+      <a href="procurement.html" class="app-card">
+        <h3>📦 Procurement</h3>
+        <p>Request tools, parts, and supplies.</p>
+      </a>
+      <a href="inventory.html" class="app-card">
+        <h3>📊 Inventory</h3>
+        <p>Track and manage available items.</p>
+      </a>
+      <a href="manage_requests.html" class="app-card">
+        <h3>🗂️ Manage Requests</h3>
+        <p>Approve or reject engineer requests.</p>
+      </a>
+      <a href="settings.html" class="app-card">
+        <h3>⚙️ Settings</h3>
+        <p>Change system preferences or user roles.</p>
+      </a>
+      <a href="schedule.html" class="app-card">
+        <h3>📅 Schedules</h3>
+        <p>Upcoming tool returns or maintenance.</p>
+      </a>
+      <a href="#" class="app-card">
+        <h3>📁 Reports</h3>
+        <p>Export logs, generate usage reports.</p>
+      </a>
+      <a href="dashboard_analytics.html" class="app-card">
+        <h3>📈 Analytics</h3>
+        <p>View system usage and trends.</p>
+      </a>
+      <a href="view-request.html" class="app-card">
+        <h3>📋 My Requests</h3>
+        <p>View your submitted procurement requests.</p>
+      </a>
+      <a href="admin-announcement.html" class="app-card" id="announcementTool" style="display: none;">
+        <h3>📢 Announcements</h3>
+        <p>Create and publish announcements to all users.</p>
+      </a>
+    </section>
+
+    <section class="bottom-section">
+      <div class="panel">
+        <h3>🔔 Notifications</h3>
+        <div id="userNotifications">Loading...</div>
+      </div>
+      <div class="panel">
+        <h3>📣 Announcements</h3>
+        <div id="adminAnnouncements">Loading...</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="firebase.js"></script>
+
+  <script>
+    const profileBtn = document.getElementById('profileBtn');
+    const profileDropdown = document.getElementById('profileDropdown');
+    const profileMenu = document.querySelector('.profile-menu');
+
+    profileBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      profileDropdown.style.display = profileDropdown.style.display === 'flex' ? 'none' : 'flex';
+    });
+
+    window.addEventListener('click', () => {
+      profileDropdown.style.display = 'none';
+    });
+
+    function updateDateTime() {
+      const now = new Date();
+      const options = {
+        weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      };
+      document.getElementById("dateTimeDisplay").textContent = now.toLocaleString('en-PH', options);
+    }
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
+
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = "index.html";
+      });
+    }
+
+    firebase.auth().onAuthStateChanged(async (user) => {
+      if (!user) return window.location.href = "index.html";
+      const db = firebase.firestore();
+
+      try {
+        const doc = await db.collection("users").doc(user.uid).get();
+        const data = doc.data();
+        const name = data?.name || user.email;
+        const role = data?.role || "User";
+        const department = data?.department || "all";
+
+        document.getElementById("welcomeMessage").textContent = `Welcome, ${name} 👋 (${role})`;
+        document.querySelector(".profile-name").textContent = name;
+
+        if (role === "admin") {
+          document.getElementById("adminLink").style.display = "block";
+          document.getElementById("announcementTool").style.display = "block";
+        }
+
+        const notifSnap = await db.collection("notifications")
+          .where("userId", "==", user.uid)
+          .orderBy("timestamp", "desc").limit(5).get();
+
+        const notifHTML = notifSnap.empty
+          ? "<p>No new notifications.</p>"
+          : notifSnap.docs.map(doc => `<p>✅ ${doc.data().message}</p>`).join("");
+        document.getElementById("userNotifications").innerHTML = notifHTML;
+
+        const annSnap = await db.collection("announcements")
+          .where("department", "in", ["all", department])
+          .orderBy("timestamp", "desc").limit(5).get();
+
+        const annHTML = annSnap.empty
+          ? "<p>No announcements.</p>"
+          : annSnap.docs.map(doc => {
+              const a = doc.data();
+              const time = a.timestamp?.toDate().toLocaleString() || "Unknown time";
+              return `<p><strong>${a.title}</strong><br>${a.content}<br><small>📌 ${a.department.toUpperCase()} | 👤 ${a.postedBy} | 🕒 ${time}</small></p><hr>`;
+            }).join("");
+        document.getElementById("adminAnnouncements").innerHTML = annHTML;
+      } catch (error) {
+        console.error("Dashboard load error:", error);
+      }
+    });
+  </script>
+</body>
+</html>
