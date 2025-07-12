@@ -3,7 +3,7 @@ name: Auto Deploy to Firebase Hosting
 on:
   push:
     branches:
-      - main  # Change this if you deploy from a different branch
+      - main
 
 jobs:
   deploy:
