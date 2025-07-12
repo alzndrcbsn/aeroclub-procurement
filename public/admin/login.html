@@ -4,70 +4,138 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Login - Aero.AMT</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Orbitron', sans-serif;
+      font-family: 'Poppins', sans-serif;
       margin: 0;
-      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      background: linear-gradient(120deg, #232526 0%, #414345 100%);
+      min-height: 100vh;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      height: 100vh;
-      color: white;
+      justify-content: center;
     }
-
-    .login-box {
-      background-color: rgba(0, 0, 0, 0.85);
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0, 217, 255, 0.4);
-      width: 350px;
+    .admin-header {
+      width: 100vw;
+      background: rgba(0, 31, 63, 0.98);
+      box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+      padding: 1.2rem 0;
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 700;
+      /* color: #00d9ff; */
+      letter-spacing: 2px;
+      margin-bottom: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
     }
-
-    .login-box h2 {
+    .admin-header .icon {
+      font-size: 2.2rem;
+      /* color: #00d9ff; */
+      filter: drop-shadow(0 2px 8px #00d9ff88);
+    }
+    .login-card {
+      background: rgba(30, 30, 40, 0.98);
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(0,217,255,0.18);
+      padding: 2.5rem 2.2rem 2rem 2.2rem;
+      width: 370px;
+      max-width: 95vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      border: 1.5px solid #00d9ff44;
+    }
+    .login-card h2 {
       text-align: center;
       color: #00d9ff;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.2rem;
+      font-size: 1.45rem;
+      font-weight: 600;
+      letter-spacing: 1px;
     }
-
-    input {
+    .login-card .admin-badge {
+      background: #00d9ff;
+      /* color: #232526; */
+      font-size: 0.95rem;
+      font-weight: 700;
+      border-radius: 6px;
+      padding: 2px 10px;
+      margin-bottom: 1.2rem;
+      box-shadow: 0 2px 8px #00d9ff33;
+      letter-spacing: 1px;
+      display: inline-block;
+    }
+    .login-card input {
       width: 100%;
-      padding: 12px;
-      margin-bottom: 1rem;
+      padding: 13px 14px;
+      margin-bottom: 1.1rem;
+      border: 1.5px solid #00d9ff44;
+      border-radius: 8px;
+      font-size: 1.08rem;
+      background: #232526;
+      /* color: #e3e3e3; */
+      transition: border 0.2s;
+      outline: none;
+    }
+    .login-card input:focus {
+      border: 1.5px solid #00d9ff;
+      background: #232526;
+    }
+    .login-card button {
+      width: 100%;
+      padding: 13px 0;
+      background: linear-gradient(90deg, #00d9ff 0%, #004578 100%);
+      color: #fff;
       border: none;
       border-radius: 8px;
-      font-size: 16px;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      background-color: #00d9ff;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 16px;
+      font-weight: 700;
+      font-size: 1.08rem;
       cursor: pointer;
+      box-shadow: 0 2px 8px #00d9ff33;
+      letter-spacing: 1px;
+      transition: background 0.18s;
     }
-
-    button:hover {
-      background-color: #00b3cc;
+    .login-card button:disabled {
+      background: #00b3cc;
+      cursor: not-allowed;
+      opacity: 0.7;
     }
-
+    .login-card button:hover:not(:disabled) {
+      background: linear-gradient(90deg, #004578 0%, #00d9ff 100%);
+    }
     .error-message {
       text-align: center;
       color: #ff7373;
-      margin-top: 1rem;
-      font-size: 14px;
+      margin-top: 0.7rem;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      min-height: 22px;
+    }
+    @media (max-width: 500px) {
+      .admin-header {
+        font-size: 1.2rem;
+        padding: 0.7rem 0;
+      }
+      .login-card {
+        padding: 1.2rem 0.7rem 1.2rem 0.7rem;
+        width: 98vw;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="login-box">
-    <h2>✈️ Admin Login</h2>
-    <input type="email" id="email" placeholder="Admin Email" required />
-    <input type="password" id="password" placeholder="Password" required />
+  <div class="admin-header"><span class="icon">🛡️</span> Aero.AMT Admin Portal</div>
+  <div class="login-card">
+    <h2>Admin Login</h2>
+    <span class="admin-badge">ADMIN ACCESS ONLY</span>
+    <input type="email" id="email" placeholder="Admin Email" required autocomplete="username" />
+    <input type="password" id="password" placeholder="Password" required autocomplete="current-password" />
     <button onclick="login()">Login</button>
     <div class="error-message" id="errorMsg"></div>
   </div>
@@ -84,24 +152,32 @@
       const password = document.getElementById("password").value;
       const errorMsg = document.getElementById("errorMsg");
       errorMsg.textContent = "";
-
+      const btn = document.querySelector("button[onclick='login()']");
+      btn.disabled = true;
+      btn.textContent = "Logging in...";
       try {
         const cred = await firebase.auth().signInWithEmailAndPassword(email, password);
         const uid = cred.user.uid;
-
         const doc = await firebase.firestore().collection("users").doc(uid).get();
-        const role = doc.data()?.role;
-
+        const userData = doc.data();
+        const role = userData?.role;
         if (role === "admin") {
-          // ✅ Redirect to correct admin dashboard path
+          // Store session info
+          localStorage.setItem("isLoggedIn", "true");
+          localStorage.setItem("userName", userData?.name || "Admin");
+          localStorage.setItem("userRole", "admin");
           window.location.replace("dashboard.html");
         } else {
           errorMsg.textContent = "❌ Access denied. Not an admin.";
           await firebase.auth().signOut();
+          document.getElementById("password").value = "";
         }
       } catch (error) {
         errorMsg.textContent = "❌ " + error.message;
+        document.getElementById("password").value = "";
       }
+      btn.disabled = false;
+      btn.textContent = "Login";
     }
   </script>
 </body>

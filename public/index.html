@@ -4,181 +4,307 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Aero.AMT Login</title>
-  <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <style>
     html, body {
       height: 100%;
       margin: 0;
-      font-family: 'Orbitron', sans-serif;
-    }
-
-    body {
-      background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
-                  url('https://images.unsplash.com/photo-1464037866556-6812c9d1c72e?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0') no-repeat center center fixed;
-      background-size: cover;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      font-family: 'Poppins', sans-serif;
+      overflow: hidden;
       color: white;
-      padding: 0 5%;
+      background: #e6eaf3 url('https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
+      background-size: cover;
+      position: relative;
     }
 
-    .announcement {
-      width: 45%;
-      background-color: rgba(0, 0, 0, 0.7);
-      padding: 2rem;
-      border-radius: 16px;
-      box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
-    }
-
-    .announcement h2 {
-      text-align: center;
-      color: #00d9ff;
-      margin-bottom: 1rem;
-    }
-
-    .announcement video {
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
-      border-radius: 10px;
+      height: 100%;
+      background: rgba(0, 78, 255, 0.45); /* blue overlay */
+      z-index: -2;
     }
 
-    .login-container {
+    header {
+      width: 100%;
+      padding: 1rem 2rem;
+      font-size: 1.25rem;
+      color: #fff;
+      background: rgba(0, 0, 0, 0.6);
+      text-align: left;
+    }
+
+    .overlay {
       height: 100%;
-      width: 45%;
-      background-color: rgba(0, 0, 0, 0.85);
-      padding: 3rem;
-      border-radius: 16px;
-      box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .login-window {
+      background: #f8f9fb;
+      padding: 2.5rem 3rem;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 8px 32px rgba(0,120,212,0.28), 0 2px 8px rgba(0,0,0,0.08);
       display: flex;
       flex-direction: column;
+      gap: 1.2rem;
+      color: #222;
+      text-align: left;
+      position: relative;
+      min-height: 370px;
+      transition: min-height 0.4s cubic-bezier(.4,2,.3,1), box-shadow 0.3s, padding 0.3s;
+      will-change: min-height;
+      overflow: hidden;
+      animation: fadeInUp 0.6s ease forwards;
+    }
+    .login-window.animating {
+      animation: simpleFade 0.9s ease;
+    }
+
+    @keyframes simpleFade {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    .login-window::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 6px;
+      background: linear-gradient(90deg,#0078D4 0%,#004578 100%);
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
+      z-index: 1;
+    }
+    .logo {
+      width: 100%;
+      display: flex;
+      align-items: center;
       justify-content: center;
+      margin-bottom: 1.2rem;
+    }
+    .logo img {
+      width: 56px;
+      height: 56px;
+      object-fit: cover;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,120,212,0.12);
+      background: #fff;
+      border: 2px solid #e0e0e0;
+      display: block;
+      margin: 0 auto;
     }
 
-    h1 {
-      text-align: center;
-      color: #00d9ff;
-      margin-bottom: 1rem;
+    .login-window h1 {
+      font-size: 1.5rem;
+      margin: 0.5rem 0 0.2rem 0;
+      color: #004578;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-align: left;
     }
 
-    h2 {
-      text-align: center;
-      margin-bottom: 1.5rem;
+    .login-window h2 {
+      font-weight: 400;
+      font-size: 1.08rem;
+      margin-bottom: 1.2rem;
+      color: #333;
+      text-align: left;
     }
 
     input, select {
       width: 100%;
-      padding: 12px;
+      padding: 12px 14px;
+      border: 1px solid #c8c8c8;
+      border-radius: 8px;
+      font-size: 1rem;
       margin-bottom: 1rem;
-      border: none;
-      border-radius: 6px;
-      font-size: 16px;
+      background: #f3f3f3;
+      color: #222;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus {
+      border-color: #0078D4;
+      outline: none;
+      background: #fff;
     }
 
     button {
       width: 100%;
       padding: 12px;
-      background-color: #00d9ff;
+      background: linear-gradient(90deg,#0078D4 0%,#004578 100%);
       border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      font-size: 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
       cursor: pointer;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(0,120,212,0.08);
+      transition: background 0.3s;
+      margin-top: 0.5rem;
     }
-
     button:hover {
-      background-color: #00b3cc;
+      background: linear-gradient(90deg,#005a9e 0%,#003366 100%);
     }
 
     .toggle-mode {
-      text-align: center;
-      margin-top: 1rem;
-      font-size: 14px;
+      text-align: left;
+      font-size: 0.98rem;
+      margin-top: 0.5rem;
     }
 
-    .hidden { display: none; }
+    .toggle-mode a, .forgot-link {
+      color: #0078D4;
+      text-decoration: none;
+      font-weight: 600;
+      margin-left: 2px;
+    }
+
+    .toggle-mode a:hover, .forgot-link:hover {
+      text-decoration: underline;
+    }
+
+    .forgot-link {
+      float: right;
+      font-size: 0.98rem;
+      margin-top: -0.8rem;
+      margin-bottom: 0.8rem;
+    }
 
     #statusMessage {
-      text-align: center;
-      margin-top: 1rem;
-      font-weight: bold;
+      text-align: left;
+      font-weight: 600;
+      color: #f44336;
+      margin-top: 0.5rem;
+      min-height: 24px;
     }
 
-    .field-group { margin-bottom: 1rem; }
+    #loadingSpinner {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 120, 212, 0.12);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #0078D4;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
-  <div class="announcement">
-    <h2>🎬 Aero.AMT Updates</h2>
-    <video controls autoplay muted loop>
-      <source src="sample-announcement.mp4" type="video/mp4">
-      Your browser does not support the video tag.
-    </video>
-  </div>
+  <header>Aero.AMT Club Login</header>
 
-  <div class="login-container hidden" id="loginContainer">
-    <h1>Aero.AMT Club</h1>
-    <h2 id="formTitle">✈️ Aero.AMT Login</h2>
-    <form id="authForm">
-      <div class="field-group hidden" id="nameGroup">
-        <input type="text" id="name" placeholder="Full Name" />
-      </div>
-      <div class="field-group hidden" id="yearGroup">
-        <select id="yearLevel">
-          <option value="">Select Year Level</option>
-          <option>1st Year</option>
-          <option>2nd Year</option>
-          <option>3rd Year</option>
-          <option>4th Year</option>
-        </select>
-      </div>
-      <div class="field-group hidden" id="positionGroup">
-        <select id="position">
-          <option value="">Select Department / Role</option>
-          <option value="engineer">Engineer</option>
-          <option value="mechanic">Mechanic</option>
-          <option value="student">Student</option>
-        </select>
-      </div>
-      <div class="field-group hidden" id="prcGroup">
-        <input type="text" id="prc" placeholder="PRC License Number (for Engineers only)" />
-      </div>
-      <div class="field-group hidden" id="usernameGroup">
-        <input type="text" id="username" placeholder="Username" />
-      </div>
+  <audio autoplay loop>
+    <source src="login-bgm.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
 
-      <input type="email" id="email" placeholder="Email" required />
-      <input type="password" id="password" placeholder="Password" required />
-      <button type="submit" id="submitBtn">Login</button>
-    </form>
-
-    <div class="toggle-mode">
-      <span id="toggleText">Don't have an account?</span>
-      <a href="#" id="toggleLink">Register</a>
+  <div class="overlay">
+    <div class="login-window" id="loginContainer">
+      <div class="logo">
+        <img src="logo.jpg" alt="Aero.AMT Club Logo" />
+      </div>
+      <h1>Sign in</h1>
+      <h2 id="formTitle">Sign in with your Aero.AMT account</h2>
+      <form id="authForm">
+        <div class="field-group" id="nameGroup" style="display:none;">
+          <input type="text" id="name" placeholder="Full Name" />
+        </div>
+        <div class="field-group" id="yearGroup" style="display:none;">
+          <select id="yearLevel">
+            <option value="">Select Year Level</option>
+            <option>1st Year</option>
+            <option>2nd Year</option>
+            <option>3rd Year</option>
+            <option>4th Year</option>
+          </select>
+        </div>
+        <div class="field-group" id="positionGroup" style="display:none;">
+          <select id="position">
+            <option value="">Select Role</option>
+            <option value="engineer">Engineer</option>
+            <option value="mechanic">Mechanic</option>
+            <option value="student">Student</option>
+          </select>
+        </div>
+        <div class="field-group" id="prcGroup" style="display:none;">
+          <input type="text" id="prc" placeholder="PRC License Number (Engineers only)" />
+        </div>
+        <div class="field-group" id="usernameGroup" style="display:none;">
+          <input type="text" id="username" placeholder="Username" />
+        </div>
+        <div class="field-group" id="loginFields">
+          <input type="email" id="email" placeholder="Email address" required />
+        </div>
+        <div class="field-group" id="passwordGroup">
+          <input type="password" id="password" placeholder="Password" required />
+        </div>
+        <a class="forgot-link" href="#">Forgot password?</a>
+        <button type="submit" id="submitBtn">Sign in</button>
+      </form>
+      <div class="toggle-mode">
+        <span id="toggleText">Don't have an account?</span>
+        <a href="#" id="toggleLink">Register</a>
+      </div>
+      <div id="statusMessage"></div>
     </div>
-
-    <div id="statusMessage"></div>
   </div>
 
-  <!-- Firebase SDK -->
+  <div id="loadingSpinner">
+    <div class="spinner"></div>
+  </div>
+
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="firebase.js"></script>
-
   <script>
     let isLogin = true;
-
+    const loginWindow = document.getElementById("loginContainer");
     const toggle = () => {
       isLogin = !isLogin;
-      document.getElementById("formTitle").textContent = isLogin ? "✈️ Aero.AMT Login" : "✈️ Aero.AMT Registration";
+      document.getElementById("formTitle").textContent = isLogin ? "Sign in with your Aero.AMT account" : "Create your Aero.AMT account";
       document.getElementById("submitBtn").textContent = isLogin ? "Login" : "Register";
-      document.getElementById("toggleText").textContent = isLogin ? "Don't have an account?" : "Already have an account?";
+      document.getElementById("toggleText").textContent = isLogin ? "Don't have an account? " : "Already have an account? ";
       document.getElementById("toggleLink").textContent = isLogin ? "Register" : "Login";
-
+      // Show/hide registration fields using display style
       ["nameGroup", "yearGroup", "positionGroup", "prcGroup", "usernameGroup"].forEach(id => {
-        document.getElementById(id).classList.toggle("hidden", isLogin);
+        const group = document.getElementById(id);
+        group.style.display = isLogin ? "none" : "block";
+        if (!isLogin) group.style.animation = "fadeInUp 0.4s ease";
       });
+      // Show/hide login fields
+      document.getElementById("loginFields").style.display = isLogin ? "block" : "none";
+      // Show password field for both modes
+      document.getElementById("passwordGroup").style.display = "block";
+
+      // Adjust min-height for registration/sign in
+      loginWindow.style.minHeight = isLogin ? "370px" : "540px";
+      // Add animation class for bounce effect
+      loginWindow.classList.add("animating");
+      setTimeout(() => {
+        loginWindow.classList.remove("animating");
+      }, 500);
     };
 
     document.getElementById("toggleLink").addEventListener("click", (e) => {
@@ -193,43 +319,59 @@
 
     document.getElementById("authForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
       const status = document.getElementById("statusMessage");
       status.textContent = "";
 
       if (isLogin) {
+        // Login only needs email and password
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+        if (!email || !password) {
+          status.textContent = "❌ Please enter your email and password.";
+          return;
+        }
         try {
           const cred = await firebase.auth().signInWithEmailAndPassword(email, password);
           if (!cred.user.emailVerified) {
-            status.textContent = "❌ Please verify your email before logging in.";
+            status.textContent = "❌ Please verify your email.";
             await firebase.auth().signOut();
             return;
           }
-
-          const doc = await firebase.firestore().collection("users").doc(cred.user.uid).get();
-          const role = doc.data()?.role;
-
-          window.location.replace("dashboard.html");
+          document.getElementById("loadingSpinner").style.display = "flex";
+          localStorage.setItem('isLoggedIn', 'true');
+          // Fetch user's name from Firestore and save to localStorage
+          try {
+            const userDoc = await firebase.firestore().collection("users").doc(cred.user.uid).get();
+            if (userDoc.exists) {
+              const userData = userDoc.data();
+              localStorage.setItem('userName', userData.name || "User");
+            }
+          } catch (err) {
+            // fallback if fetch fails
+            localStorage.setItem('userName', "User");
+          }
+          setTimeout(() => {
+            window.location.replace("dashboard.html");
+          }, 1500);
         } catch (err) {
           status.textContent = "❌ " + err.message;
         }
       } else {
+        // Registration needs all fields
         const name = document.getElementById("name").value.trim();
         const year = document.getElementById("yearLevel").value;
         const position = document.getElementById("position").value;
         const prc = document.getElementById("prc").value.trim();
         const username = document.getElementById("username").value.trim();
-
-        if (!name || !year || !position || !username) {
-          status.textContent = "❌ Please fill all required fields.";
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+        if (!name || !year || !position || !username || !email || !password) {
+          status.textContent = "❌ Please fill all fields.";
           return;
         }
-
         try {
           const cred = await firebase.auth().createUserWithEmailAndPassword(email, password);
           await cred.user.sendEmailVerification();
-
           await firebase.firestore().collection("users").doc(cred.user.uid).set({
             name,
             yearLevel: year,
@@ -239,8 +381,7 @@
             email,
             role: position
           });
-
-          status.textContent = "✅ Registered! Please verify your email before logging in.";
+          status.textContent = "✅ Registered! Verify your email.";
           document.getElementById("authForm").reset();
           toggle();
         } catch (err) {
@@ -250,14 +391,27 @@
     });
 
     firebase.auth().onAuthStateChanged(async (user) => {
-      if (user) {
-        const doc = await firebase.firestore().collection("users").doc(user.uid).get();
-        const role = doc.data()?.role;
+      const loginContainer = document.getElementById("loginContainer");
+      const spinner = document.getElementById("loadingSpinner");
 
-        // Send everyone to dashboard regardless of role
-        window.location.replace("dashboard.html");
+      spinner.style.display = "none";
+
+      // Only auto-redirect if user is coming from a fresh login, not after logout
+      if (user && user.emailVerified && localStorage.getItem('isLoggedIn') === 'true') {
+        await user.reload();
+        spinner.style.display = "flex";
+        setTimeout(() => {
+          window.location.replace("dashboard.html");
+        }, 1000);
       } else {
-        document.getElementById("loginContainer").classList.remove("hidden");
+        // Remove login status if not authenticated or after logout
+        localStorage.removeItem('isLoggedIn');
+        spinner.style.display = "none";
+        loginContainer.classList.remove("hidden");
+        if (user && !user.emailVerified) {
+          await firebase.auth().signOut();
+          document.getElementById("statusMessage").textContent = "❌ Please verify your email.";
+        }
       }
     });
   </script>

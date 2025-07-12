@@ -3,188 +3,131 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>📢 Announcements - Admin | Aero.AMT</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet" />
+  <title>Admin Announcements</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <style>
     body {
-      font-family: 'Orbitron', sans-serif;
-      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
-      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      background: #f8f9fb;
+      color: #222;
       margin: 0;
       padding: 0;
     }
-    header {
-      background-color: rgba(0, 31, 63, 0.95);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem 2rem;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    .container {
+      max-width: 520px;
+      margin: 3rem auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 16px rgba(0,120,212,0.10);
+      padding: 2rem 2.5rem;
     }
-    .header-title {
+    h2 {
+      color: #004578;
+      margin-bottom: 1.2rem;
       font-size: 1.5rem;
-      color: #00d9ff;
-    }
-    .header-time {
-      font-size: 1rem;
-    }
-    .back-btn {
-      background-color: #00d9ff;
-      color: #000;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-      padding: 0.5rem 1rem;
-      font-size: 14px;
-      white-space: nowrap;
-    }
-    .back-btn:hover {
-      background-color: #00b3cc;
-    }
-    h1 {
       text-align: center;
-      color: #00d9ff;
-      margin-top: 1.5rem;
     }
-    form {
-      width: 80%;
-      max-width: 600px;
-      margin: 1rem auto;
-      background-color: rgba(255,255,255,0.05);
-      padding: 1.5rem;
-      border-radius: 10px;
+    #announcements-list {
+      background: #f8f9fb;
+      border-radius: 8px;
+      padding: 1rem 1.2rem;
+      box-shadow: 0 2px 8px rgba(0,120,212,0.08);
+      color: #222;
+      min-height: 48px;
+      margin-bottom: 1.2rem;
     }
-    input, textarea, select, button {
-      width: 100%;
-      padding: 0.8rem;
+    #announcements-list .announcement {
       margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #eee;
+    }
+    #announcements-list .announcement:last-child {
+      border-bottom: none;
+    }
+    #announcement-form {
+      display: flex;
+      gap: 0.7rem;
+      align-items: center;
+      margin-top: 1.2rem;
+    }
+    #announcement-input {
+      flex: 1;
+      padding: 8px 12px;
       border-radius: 6px;
-      border: none;
+      border: 1px solid #c8c8c8;
       font-size: 1rem;
     }
-    button {
-      background-color: #00d9ff;
-      color: #000;
-      font-weight: bold;
+    #announcement-form button {
+      padding: 8px 18px;
+      background: #0078D4;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
       cursor: pointer;
-    }
-    button:hover {
-      background-color: #00b3cc;
-    }
-    .announcement-list {
-      width: 90%;
-      margin: 1rem auto;
-    }
-    .announcement-item {
-      background-color: rgba(255,255,255,0.05);
-      padding: 1rem;
-      margin-bottom: 1rem;
-      border-radius: 8px;
-    }
-    .announcement-item h3 {
-      color: #00d9ff;
-      margin: 0 0 0.5rem;
-    }
-    .announcement-item p {
-      margin: 0.2rem 0;
-    }
-    .announcement-item small {
-      color: #ccc;
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="header-title">📢 Admin Announcements</div>
-    <div class="header-time" id="timestamp"></div>
-    <button class="back-btn" onclick="window.location.href='dashboard.html'">⬅ Back</button>
-  </header>
-
-  <h1>📣 Post a New Announcement</h1>
-  <form id="announcementForm">
-    <input type="text" id="title" placeholder="Title" required />
-    <textarea id="content" rows="4" placeholder="Content" required></textarea>
-    <select id="department">
-      <option value="all">All Departments</option>
-      <option value="aero">Aeronautical Engineering</option>
-      <option value="amt">Aircraft Maintenance Technology</option>
-      <option value="cert">Certificate in AMT</option>
-    </select>
-    <button type="submit">📤 Post Announcement</button>
-  </form>
-
-  <div class="announcement-list" id="announcementsList"></div>
-
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="../firebase.js"></script>
+  <div class="container">
+    <h2>📢 Announcements</h2>
+    <div id="announcements-list">
+      <span style="color:#888;">No announcements yet.</span>
+    </div>
+    <form id="announcement-form">
+      <input type="text" id="announcement-input" placeholder="Type announcement..." />
+      <button type="submit">Post</button>
+    </form>
+  </div>
   <script>
+    // TODO: Replace with your Firebase config
+    var firebaseConfig = {
+      // apiKey: "...",
+      // authDomain: "...",
+      // projectId: "...",
+      // ...
+    };
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
     const db = firebase.firestore();
-    const auth = firebase.auth();
 
-    function updateTimestamp() {
-      const now = new Date();
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-      document.getElementById("timestamp").textContent = now.toLocaleDateString(undefined, options);
-    }
-    updateTimestamp();
-    setInterval(updateTimestamp, 60000);
-
-    auth.onAuthStateChanged(async (user) => {
-      if (!user) return alert("🚫 Not authenticated.");
-      const userDoc = await db.collection("users").doc(user.uid).get();
-      const userData = userDoc.data();
-      const name = userData.name || "Admin";
-      const role = userData.role || "admin";
-
-      document.getElementById("announcementForm").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const title = document.getElementById("title").value.trim();
-        const content = document.getElementById("content").value.trim();
-        const department = document.getElementById("department").value;
-
-        if (!title || !content) return alert("🚫 All fields are required.");
-
-        try {
-          await db.collection("announcements").add({
-            title,
-            content,
-            department,
-            postedBy: name,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-          });
-          alert("✅ Announcement posted successfully!");
-          document.getElementById("announcementForm").reset();
-          loadAnnouncements();
-        } catch (err) {
-          console.error("Failed to post announcement:", err);
-          alert("❌ Error posting announcement.");
+    async function fetchAnnouncements() {
+      const list = document.getElementById('announcements-list');
+      list.innerHTML = '<span style="color:#888;">Loading...</span>';
+      try {
+        const snap = await db.collection('announcements').orderBy('timestamp', 'desc').get();
+        if (snap.empty) {
+          list.innerHTML = '<span style="color:#888;">No announcements yet.</span>';
+          return;
         }
-      });
-
-      loadAnnouncements();
-    });
-
-    async function loadAnnouncements() {
-      const container = document.getElementById("announcementsList");
-      container.innerHTML = "";
-      const snapshot = await db.collection("announcements").orderBy("timestamp", "desc").get();
-
-      snapshot.forEach(doc => {
-        const a = doc.data();
-        const time = a.timestamp?.toDate().toLocaleString() || "Unknown time";
-        container.innerHTML += `
-          <div class="announcement-item">
-            <h3>${a.title}</h3>
-            <p>${a.content}</p>
-            <small>📌 Department: ${a.department.toUpperCase()}</small><br>
-            <small>👤 Posted by: ${a.postedBy} | 🕒 ${time}</small>
-          </div>
-        `;
-      });
+        list.innerHTML = Array.from(snap.docs).map(doc => {
+          const data = doc.data();
+          const date = data.timestamp && data.timestamp.toDate ? data.timestamp.toDate().toLocaleString() : '';
+          return `<div class='announcement'><strong>${data.author || 'Admin'}:</strong> ${data.text}<br><span style='color:#888;font-size:0.95em;'>${date}</span></div>`;
+        }).join('');
+      } catch (err) {
+        list.innerHTML = '<span style="color:#f44336;">Failed to load announcements.</span>';
+      }
     }
-  </script>
-</body>
-</html>
+    fetchAnnouncements();
+    document.getElementById('announcement-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const input = document.getElementById('announcement-input');
+      const text = input.value.trim();
+      if (!text) return;
+      const author = localStorage.getItem('userName') || 'Admin';
+      try {
+        await db.collection('announcements').add({
+          text,
+          author,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        input.value = '';
+        fetchAnnouncements();
+      } catch (err) {
+        alert('Failed to post announcement.');
+      }
+    });
