@@ -5,7 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Aero.AMT Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="firebase.js"></script>
   <style>
     html, body {
       margin: 0;
@@ -229,66 +233,86 @@
       justify-content: flex-start;
       word-break: break-word;
       overflow: hidden;
+      position: relative;
     }
-
     .section-box:hover {
-      transform: scale(1.04) translateY(-6px);
-      background-color: #e3f0fa;
-      box-shadow: 0 8px 32px rgba(0,120,212,0.18);
-      z-index: 2;
+      transform: scale(1.045) translateY(-8px);
+      background: linear-gradient(135deg, #e3f0fa 60%, #f7faff 100%);
+      box-shadow: 0 12px 36px rgba(0,120,212,0.22), 0 2px 8px rgba(0,0,0,0.08);
+      z-index: 3;
+      border: 1.5px solid #0078D4;
     }
-
-    .section-box h3 {
-      font-size: 1.25rem;
-      margin-bottom: 0.7rem;
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .section-box canvas {
-      width: 100% !important;
-      height: 180px !important;
-      max-width: 260px;
-      margin: 0 auto 0.6rem auto;
+    .section-box::after {
+      content: '';
       display: block;
+      position: absolute;
+      left: 0; top: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      border-radius: 10px;
+      transition: box-shadow 0.18s;
     }
-
-    .section-box #request-updates {
+    .section-box:hover::after {
+      box-shadow: 0 0 0 4px rgba(0,120,212,0.08);
+    }
+    #announcements-list {
       width: 100%;
-      max-height: 90px;
+      max-height: 180px;
       overflow-y: auto;
-      font-size: 1rem;
-      margin-top: 0.4rem;
+      padding-right: 6px;
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+      scrollbar-width: thin;
+      scrollbar-color: #0078D4 #eee;
+      background: transparent;
     }
-
-    .section-box #request-updates h4 {
-      font-size: 1.08rem;
-      margin: 0 0 6px 0;
-      text-align: left;
+    #announcements-list::-webkit-scrollbar {
+      width: 7px;
+      background: #eee;
+      border-radius: 6px;
     }
-
-    .section-box #updates-list {
-      padding-left: 16px;
-      margin: 0;
+    #announcements-list::-webkit-scrollbar-thumb {
+      background: #0078D4;
+      border-radius: 6px;
     }
-
-    .section-box #updates-list li {
-      margin-bottom: 6px;
-      font-size: 1rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .announcement-card {
+      background: #f7faff;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,120,212,0.08);
+      margin-bottom: 1.1rem;
+      padding: 1rem 1.1rem 0.7rem 1.1rem;
+      border: 1px solid #e3eafc;
+      cursor: pointer;
+      transition: box-shadow 0.18s;
+    }
+    .announcement-card:hover {
+      box-shadow: 0 4px 16px rgba(0,120,212,0.18);
+      background: #e3f0fa;
+    }
+    .announcement-title {
+      font-weight:700;
+      color:#0078D4;
+      font-size:1.13rem;
+      margin-bottom:0.3rem;
+      letter-spacing:0.5px;
+    }
+    .announcement-content {
+      margin-bottom:0.5rem;
+      font-size:1.05rem;
+      color:#222;
+    }
+    .announcement-meta {
+      color:#888;
+      font-size:0.97em;
+      margin-bottom:0.2rem;
     }
 
     /* Modal styles */
     .modal {
       display: none;
       position: fixed;
-      z-index: 2000;
+      z-index: 3000;
       left: 0; top: 0; width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.35);
+      background: rgba(0,0,0,0.45);
       justify-content: center;
       align-items: center;
       transition: opacity 0.2s;
@@ -385,13 +409,81 @@
 </head>
 <body>
   <script>
-    // Simple authentication check: redirect to index.html if not logged in
-    if (!localStorage.getItem('isLoggedIn')) {
-      window.location.replace('index.html');
-    }
+    document.addEventListener('DOMContentLoaded', function() {
+      // Ensure Firebase is initialized before fetching announcements
+      if (typeof firebase === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'firebase.js';
+        script.onload = initAnnouncements;
+        document.head.appendChild(script);
+      } else {
+        initAnnouncements();
+      }
+
+      function initAnnouncements() {
+        const announcementsBox = document.getElementById('announcements-box');
+        const announcementsList = document.getElementById('announcements-list');
+        const announcementModal = document.createElement('div');
+        announcementModal.className = 'modal';
+        announcementModal.id = 'announcement-modal';
+        announcementModal.innerHTML = `<div class="modal-content" id="announcement-modal-content">
+          <button class="modal-close" id="announcement-modal-close">&times;</button>
+          <div id="announcement-modal-body"></div>
+        </div>`;
+        document.body.appendChild(announcementModal);
+        // Close modal on background click
+        announcementModal.addEventListener('click', function(e) {
+          if (e.target === announcementModal) announcementModal.style.display = 'none';
+        });
+        document.getElementById('announcement-modal-close').onclick = function() {
+          announcementModal.style.display = 'none';
+        };
+
+        async function fetchAnnouncements() {
+          announcementsList.innerHTML = '<span style="color:#888;">Loading...</span>';
+          try {
+            const snap = await firebase.firestore().collection('announcements').orderBy('timestamp', 'desc').get();
+            if (snap.empty) {
+              announcementsList.innerHTML = '<span style="color:#888;">No announcements yet.</span>';
+              return;
+            }
+            announcementsList.innerHTML = Array.from(snap.docs).map((doc, idx) => {
+              const data = doc.data();
+              const date = data.timestamp && data.timestamp.toDate ? data.timestamp.toDate().toLocaleString() : '';
+              return `<div class='announcement-card' data-idx='${idx}'>
+                <div class='announcement-title'>${data.title || '(No Title)'}</div>
+                <div class='announcement-content'>${data.content || data.text || ''}</div>
+                <div class='announcement-meta'>Posted by <strong>${data.author || 'Admin'}</strong> &bull; ${date}</div>
+              </div>`;
+            }).join('');
+
+            // Add click event to each announcement card
+            Array.from(announcementsList.getElementsByClassName('announcement-card')).forEach((card, idx) => {
+              card.onclick = function() {
+                const data = snap.docs[idx].data();
+                const date = data.timestamp && data.timestamp.toDate ? data.timestamp.toDate().toLocaleString() : '';
+                document.getElementById('announcement-modal-body').innerHTML = `
+                  <h2 style='color:#0078D4;margin-bottom:0.5rem;'>${data.title || '(No Title)'}</h2>
+                  <div style='margin-bottom:1rem;'>${data.content || data.text || ''}</div>
+                  <div style='color:#888;font-size:1em;margin-bottom:0.5rem;'>Posted by <strong>${data.author || 'Admin'}</strong> &bull; ${date}</div>
+                `;
+                announcementModal.style.display = 'flex';
+              };
+            });
+          } catch (err) {
+            announcementsList.innerHTML = '<span style="color:#f44336;">Failed to load announcements.</span>';
+          }
+        }
+        fetchAnnouncements();
+        // Simple authentication check: redirect to index.html if not logged in
+        if (!localStorage.getItem('isLoggedIn')) {
+          window.location.replace('index.html');
+        }
+      }
+    });
   </script>
   <div class="bg-blur-wrapper">
-    <img class="bg-blur-img" src="https://images.unsplash.com/photo-1535914254981-b5012eebbd15?auto=format&fit=crop&w=1650&q=80" alt="Background" />
+    <img class="bg-blur-img" src="https://plus.unsplash.com/premium_photo-1679758629409-83446005843c?q=80&w=1632&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Background" />
   </div>
   <div class="dashboard-content">
     <header>
@@ -425,34 +517,15 @@
     <main class="content" id="main-content">
       <div class="greeting" id="user-greeting">Welcome!</div>
       <section id="announcements-section" style="margin-bottom:2rem;">
-        <h2 style="font-size:1.3rem;color:#004578;margin-bottom:0.7rem;">📢 Announcements</h2>
-        <div id="announcements-list" style="background:#f8f9fb;border-radius:8px;padding:1rem 1.2rem;box-shadow:0 2px 8px rgba(0,120,212,0.08);color:#222;min-height:48px;">
-          <span style="color:#888;">No announcements yet.</span>
+        <div class="section-box" id="announcements-box" style="width:100%;max-width:600px;margin:0 auto 2rem auto;cursor:pointer;transition:box-shadow 0.2s;">
+          <div style="width:100%;display:flex;align-items:center;justify-content:space-between;margin-bottom:0.7rem;">
+            <h3 style="margin:0;font-size:1.25rem;color:#0078D4;letter-spacing:0.5px;">📢 Announcements</h3>
+            <span style="color:#888;font-size:1rem;">Latest updates</span>
+          </div>
+          <div id="announcements-list">
+            <span style="color:#888;">No announcements yet.</span>
+          </div>
         </div>
-        <form id="announcement-form" style="margin-top:1.2rem;display:flex;gap:0.7rem;align-items:center;">
-          <input type="text" id="announcement-input" placeholder="Type announcement..." style="flex:1;padding:8px 12px;border-radius:6px;border:1px solid #c8c8c8;font-size:1rem;" />
-          <button type="submit" style="padding:8px 18px;background:#0078D4;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;">Post</button>
-        </form>
-    // Announcement posting logic (admin only)
-    document.getElementById('announcement-form').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const input = document.getElementById('announcement-input');
-      const text = input.value.trim();
-      if (!text) return;
-      // You can add admin check here if needed
-      const author = localStorage.getItem('userName') || 'Admin';
-      try {
-        await firebase.firestore().collection('announcements').add({
-          text,
-          author,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        input.value = '';
-        fetchAnnouncements();
-      } catch (err) {
-        alert('Failed to post announcement.');
-      }
-    });
       </section>
       <div class="section-grid">
         <div class="section-box" id="box-status">
